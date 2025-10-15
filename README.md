@@ -17,5 +17,5 @@
 **Что сделано:**
 *   Модель данных (ERD)
 *   UI-прототипы
-
+https://github.com/Semovar/home-budget
 
