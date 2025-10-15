@@ -1,0 +1,119 @@
+openapi: 3.0.3
+info:
+  title: Client Block Service API
+  version: 1.0.0
+  description: API для управления блокировками платежей клиентов.
+
+paths:
+  /clients/{clientId}/blocks:
+    post:
+      summary: Заблокировать клиента
+      description: Создает новую блокировку платежей для клиента. Если клиент уже заблокирован, возвращает ошибку.
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlockRequest"
+      responses:
+        201:
+          description: Блокировка успешно создана.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlockResponse"
+        409:
+          description: Клиент уже заблокирован.
+    delete:
+      summary: Разблокировать клиента
+      description: Снимает активную блокировку клиента.
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Блокировка успешно снята.
+        404:
+          description: Активная блокировка не найдена.
+    get:
+      summary: Проверить статус блокировки
+      description: Возвращает информацию о текущей блокировке клиента.
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Статус блокировки.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlockStatusResponse"
+        404:
+          description: Клиент не заблокирован.
+
+components:
+  schemas:
+    BlockType:
+      type: string
+      enum: [FRAUD, INCORRECT_DETAILS]
+      description: Тип блокировки (мошенничество/некорректные реквизиты).
+
+    BlockRequest:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          $ref: "#/components/schemas/BlockType"
+        reason:
+          type: string
+          description: Описание причины блокировки.
+
+    BlockResponse:
+      type: object
+      required: [id, clientId, type, createdAt, isActive]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        type:
+          $ref: "#/components/schemas/BlockType"
+        reason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        isActive:
+          type: boolean
+
+    BlockStatusResponse:
+      type: object
+      required: [isBlocked, type, blockedAt]
+      properties:
+        isBlocked:
+          type: boolean
+        type:
+          $ref: "#/components/schemas/BlockType"
+        reason:
+          type: string
+        blockedAt:
+          type: string
+          format: date-time
